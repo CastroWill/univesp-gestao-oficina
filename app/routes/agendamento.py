@@ -9,7 +9,8 @@ from app.schemas.agendamento import (
 )
 
 from typing import Optional
-from sqlalchemy import or_
+from sqlalchemy import or_, func
+from datetime import datetime
 
 from datetime import date
 from app.services.disponibilidade import (
@@ -161,4 +162,32 @@ def atualizar_status(
     return {
         "mensagem": "Status atualizado com sucesso",
         "status": agendamento.status
+    }
+
+@router.get("/dashboard")
+def dashboard(
+    db: Session = Depends(get_db)
+):
+
+    hoje = datetime.today().date()
+
+    total = db.query(Agendamento).count()
+
+    pendentes = db.query(Agendamento).filter(
+        Agendamento.status == "PENDENTE"
+    ).count()
+
+    confirmados = db.query(Agendamento).filter(
+        Agendamento.status == "CONFIRMADO"
+    ).count()
+
+    hoje_count = db.query(Agendamento).filter(
+        Agendamento.data_agendamento == hoje
+    ).count()
+
+    return {
+        "total": total,
+        "pendentes": pendentes,
+        "confirmados": confirmados,
+        "hoje": hoje_count
     }
