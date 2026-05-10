@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.models.agendamento import Agendamento
-from app.schemas.agendamento import AgendamentoCreate
+from app.schemas.agendamento import (
+    AgendamentoCreate,
+    AtualizarStatus
+)
 
 from typing import Optional
 from sqlalchemy import or_
@@ -117,3 +120,45 @@ def listar_agendamentos(
     ).all()
 
     return agendamentos
+
+@router.patch("/agendamentos/{agendamento_id}/status")
+def atualizar_status(
+    agendamento_id: int,
+    dados: AtualizarStatus,
+    db: Session = Depends(get_db)
+):
+
+    status_validos = [
+        "PENDENTE",
+        "CONFIRMADO",
+        "CONCLUIDO",
+        "CANCELADO"
+    ]
+
+    status = dados.status.upper()
+
+    if status not in status_validos:
+        raise HTTPException(
+            status_code=400,
+            detail="Status inválido"
+        )
+
+    agendamento = db.query(Agendamento).filter(
+        Agendamento.id == agendamento_id
+    ).first()
+
+    if not agendamento:
+        raise HTTPException(
+            status_code=404,
+            detail="Agendamento não encontrado"
+        )
+
+    agendamento.status = status
+
+    db.commit()
+    db.refresh(agendamento)
+
+    return {
+        "mensagem": "Status atualizado com sucesso",
+        "status": agendamento.status
+    }

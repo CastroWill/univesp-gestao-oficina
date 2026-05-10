@@ -16,3 +16,6 @@ class AgendamentoCreate(BaseModel):
 
     data_agendamento: date
     horario: time
+
+class AtualizarStatus(BaseModel):
+    status: str
