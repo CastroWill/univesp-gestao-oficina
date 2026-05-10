@@ -5,6 +5,9 @@ from app.database.connection import get_db
 from app.models.agendamento import Agendamento
 from app.schemas.agendamento import AgendamentoCreate
 
+from typing import Optional
+from sqlalchemy import or_
+
 from datetime import date
 from app.services.disponibilidade import (
     HORARIOS_PADRAO,
@@ -75,3 +78,42 @@ def listar_horarios_disponiveis(
     ]
 
     return horarios_disponiveis
+
+@router.get("/agendamentos")
+def listar_agendamentos(
+    db: Session = Depends(get_db),
+    data: Optional[date] = None,
+    status: Optional[str] = None,
+    search: Optional[str] = None
+):
+
+    query = db.query(Agendamento)
+
+    # filtro por data
+    if data:
+        query = query.filter(
+            Agendamento.data_agendamento == data
+        )
+
+    # filtro por status
+    if status:
+        query = query.filter(
+            Agendamento.status == status.upper()
+        )
+
+    # busca
+    if search:
+        query = query.filter(
+            or_(
+                Agendamento.nome_cliente.ilike(f"%{search}%"),
+                Agendamento.email.ilike(f"%{search}%"),
+                Agendamento.telefone.ilike(f"%{search}%")
+            )
+        )
+
+    agendamentos = query.order_by(
+        Agendamento.data_agendamento,
+        Agendamento.horario
+    ).all()
+
+    return agendamentos
