@@ -372,14 +372,133 @@
     e adiciona apenas no botão clicado.
   -->
     <script>
-      function selecionarHorario(botao) {
-        // Remove a classe "selecionado" de todos os botões de horário
-        document.querySelectorAll(".btn-horario").forEach(function (btn) {
-          btn.classList.remove("selecionado");
-        });
-        // Adiciona "selecionado" somente no botão clicado
-        botao.classList.add("selecionado");
+      const API_URL =
+        "https://curly-space-robot-944x97rv644c7p7-8000.app.github.dev";
+
+      let horarioSelecionado = null;
+
+      // -----------------------------
+      // Buscar horários disponíveis
+      // -----------------------------
+      async function carregarHorarios() {
+        const data = document.getElementById("dataAtendimento").value;
+
+        if (!data) return;
+
+        const container = document.getElementById("horarios");
+
+        container.innerHTML = "<p>Carregando horários...</p>";
+
+        try {
+          const response = await fetch(
+            `${API_URL}/horarios-disponiveis?data=${data}`,
+          );
+
+          const horarios = await response.json();
+
+          container.innerHTML = "";
+
+          if (horarios.length === 0) {
+            container.innerHTML =
+              "<p class='text-muted'>Sem horários disponíveis</p>";
+            return;
+          }
+
+          horarios.forEach((horario) => {
+            const botao = document.createElement("button");
+
+            botao.type = "button";
+
+            botao.className = "btn-horario";
+
+            botao.innerText = horario;
+
+            botao.onclick = () => {
+              document
+                .querySelectorAll(".btn-horario")
+                .forEach((btn) => btn.classList.remove("selecionado"));
+
+              botao.classList.add("selecionado");
+
+              horarioSelecionado = horario;
+            };
+
+            container.appendChild(botao);
+          });
+        } catch (error) {
+          console.error(error);
+
+          container.innerHTML =
+            "<p class='text-danger'>Erro ao carregar horários</p>";
+        }
       }
+
+      // -----------------------------
+      // Criar agendamento
+      // -----------------------------
+      async function criarAgendamento() {
+        if (!horarioSelecionado) {
+          alert("Selecione um horário");
+          return;
+        }
+
+        const body = {
+          nome_cliente: document.getElementById("nomeCompleto").value,
+
+          telefone: document.getElementById("telefone").value,
+
+          email: document.getElementById("email").value,
+
+          placa: document.getElementById("placa").value,
+
+          modelo_veiculo: document.getElementById("modelo").value,
+
+          ano_veiculo: parseInt(document.getElementById("ano").value),
+
+          descricao_problema: document.getElementById("descricao").value,
+
+          data_agendamento: document.getElementById("dataAtendimento").value,
+
+          horario: `${horarioSelecionado}:00`,
+        };
+
+        try {
+          const response = await fetch(`${API_URL}/agendamentos`, {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify(body),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            alert(data.detail);
+            return;
+          }
+
+          alert("Agendamento criado com sucesso!");
+
+          location.reload();
+        } catch (error) {
+          console.error(error);
+
+          alert("Erro ao criar agendamento");
+        }
+      }
+
+      // evento da data
+      document
+        .getElementById("dataAtendimento")
+        .addEventListener("change", carregarHorarios);
+
+      // botão agendar
+      document
+        .getElementById("btnAgendar")
+        .addEventListener("click", criarAgendamento);
     </script>
   </body>
 </html>
