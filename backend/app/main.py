@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.database.connection import engine
-from backend.app.models.agendamento import Agendamento
-from backend.app.routes.agendamento import router as agendamento_router
+from app.database.connection import engine
+from app.models.agendamento import Agendamento
+from app.routes.agendamento import router as agendamento_router
 
 
 Agendamento.metadata.create_all(bind=engine)

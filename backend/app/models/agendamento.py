@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, Time, Text, DateTime
 from datetime import datetime
 
-from backend.app.database.connection import Base
+from app.database.connection import Base
 
 
 class Agendamento(Base):

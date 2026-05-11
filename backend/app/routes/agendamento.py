@@ -5,13 +5,13 @@ from sqlalchemy import or_, func
 from typing import Optional
 from datetime import date, datetime
 
-from backend.app.database.connection import get_db
-from backend.app.models.agendamento import Agendamento
-from backend.app.schemas.agendamento import (
+from app.database.connection import get_db
+from app.models.agendamento import Agendamento
+from app.schemas.agendamento import (
     AgendamentoCreate,
     AtualizarStatus
 )
-from backend.app.services.disponibilidade import (
+from app.services.disponibilidade import (
     HORARIOS_PADRAO,
     formatar_horario
 )
